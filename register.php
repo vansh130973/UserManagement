@@ -1,4 +1,5 @@
 <?php
+session_start(); // Start the session to access session variables
 require_once 'config.php';
 include 'include/header.php';
 ?>
@@ -41,12 +42,6 @@ include 'include/header.php';
     </div>
 
     <div class="mb-3">
-      <label>Phone Number *</label>
-      <input type="tel" name="phonenum" class="form-control" />
-      <div id="phoneError" class="text-danger"></div>
-    </div>
-
-    <div class="mb-3">
       <label>Email *</label>
       <input type="email" name="email" class="form-control" />
       <div id="emailError" class="text-danger"></div>
@@ -58,21 +53,20 @@ include 'include/header.php';
     </div>
 
     <div class="mb-3">
-      <select id="state" name="state" class="form-select">
-        <option value="" disabled selected>Select the State</option>
-        <option value="gujrat">Gujrat</option>
-        <option value="maharastra">Maharastra</option>
-        <option value="goa">Goa</option>
+      <label for="state" class="form-label">State*</label>
+      <select id="state" name="state" class="form-control">
+        <option value="">Select state</option>
+        <option value="Gujarat">Gujarat</option>
+        <option value="Maharashtra">Maharashtra</option>
+        <option value="Rajasthan">Rajasthan</option>
       </select>
       <div id="stateError" class="text-danger"></div>
     </div>
 
     <div class="mb-3">
-      <select id="district" name="district" class="form-select mb-3">
-        <option value="" disabled selected>Select the District</option>
-        <option value="ahmedabad">Ahmedabad</option>
-        <option value="ganthinagar">Ganthinagar</option>
-        <option value="arvali">Arvali</option>
+      <label for="district" class="form-label">District*</label>
+      <select id="district" name="district" class="form-control">
+        <option value="">-- Select District --</option>
       </select>
       <div id="districtError" class="text-danger"></div>
     </div>
@@ -86,23 +80,51 @@ include 'include/header.php';
 </div>
 
 <script>
+  var stateDistrictMap = {
+      Gujarat: ["Ahmedabad", "Surat", "Rajkot"],
+      Maharashtra: ["Mumbai", "Pune", "Nagpur"],
+      Rajasthan: ["Jaipur", "Udaipur", "Jodhpur"],
+    };
+
+    var stateDropdown = document.getElementById("state");
+    var districtDropdown = document.getElementById("district");
+
+    stateDropdown.onchange = function () {
+      var selectedState = stateDropdown.value;
+      var districts = stateDistrictMap[selectedState];
+
+      districtDropdown.innerHTML = "";
+
+      var defaultOption = document.createElement("option");
+      defaultOption.text = "-- Select District --";
+      defaultOption.value = "";
+      districtDropdown.add(defaultOption);
+
+      if (districts) {
+        for (var i = 0; i < districts.length; i++) {
+          var option = document.createElement("option");
+          option.text = districts[i];
+          option.value = districts[i];
+          districtDropdown.add(option);
+        }
+      }
+    };
   document.getElementById('registerForm').addEventListener('submit', function (e) {
     let isValid = true;
 
     const form = e.target;
-
     const name = form.name.value.trim();
     const firstname = form.firstname.value.trim();
     const lastname = form.lastname.value.trim();
     const username = form.username.value.trim();
     const password = form.password.value.trim();
-    const phone = form.phonenum.value.trim();
     const email = form.email.value.trim();
     const state = document.getElementById('state').value;
     const district = document.getElementById('district').value;
 
     clearErrors();
 
+    // Validation for required fields
     if (!name) {
       document.getElementById('nameError').textContent = "Name is required";
       isValid = false;
@@ -131,14 +153,6 @@ include 'include/header.php';
       isValid = false;
     }
 
-    if (!phone) {
-      document.getElementById('phoneError').textContent = "Phone number is required";
-      isValid = false;
-    } else if (!/^\d{10}$/.test(phone)) {
-      document.getElementById('phoneError').textContent = "Phone number must be exactly 10 digits";
-      isValid = false;
-    }
-
     if (!email) {
       document.getElementById('emailError').textContent = "Email is required";
       isValid = false;
@@ -150,6 +164,17 @@ include 'include/header.php';
       }
     }
 
+    if (state === "") {
+      document.getElementById('stateError').textContent = "State is required";
+      isValid = false;
+    }
+
+    if (district === "") {
+      document.getElementById('districtError').textContent = "District is required";
+      isValid = false;
+    }
+
+    // Prevent form submission if validation fails
     if (!isValid) {
       e.preventDefault();
     }
@@ -162,7 +187,6 @@ include 'include/header.php';
       'lastnameError',
       'usernameError',
       'passwordError',
-      'phoneError',
       'emailError',
       'stateError',
       'districtError'
@@ -170,7 +194,7 @@ include 'include/header.php';
     errorFields.forEach(id => document.getElementById(id).textContent = '');
   }
 
-  allFields = ['name', 'firstname', 'lastname', 'username', 'password', 'phonenum', 'email']
+  allFields = ['name', 'firstname', 'lastname', 'username', 'password', 'email', 'state', 'district']
   allFields.forEach(field => {
     document.querySelector(`[name="${field}"]`).addEventListener('input', function () {
       document.getElementById(field + 'Error').textContent = '';
@@ -180,5 +204,3 @@ include 'include/header.php';
 </body>
 
 <?php include 'include/footer.php'; ?>
-
-</html>

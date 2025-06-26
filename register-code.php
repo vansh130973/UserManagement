@@ -1,7 +1,8 @@
 <?php
+session_start();
 include 'config.php';
 
-if (isset($_POST['registerBtn'])) {
+if (isset($_POST['registerBtn'])) { 
 
     $name = $_POST['name'];
     $firstname = $_POST['firstname'];
@@ -14,7 +15,7 @@ if (isset($_POST['registerBtn'])) {
     $district = $_POST['district'];
 
     $query = "INSERT INTO register (name, firstname, lastname, username, password, email, address, state, district) 
-        VALUES ('$name', '$firstname', '$lastname', '$username', '$password', '$email', '$address', '$state', '$district')";
+              VALUES ('$name', '$firstname', '$lastname', '$username', '$password', '$email', '$address', '$state', '$district')";
 
     if (mysqli_query($conn, $query)) {
         $_SESSION['message'] = "Account created successfully!";
