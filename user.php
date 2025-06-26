@@ -1,15 +1,22 @@
 <?php require_once 'config.php';
 include 'include/header.php';
 ?>
-  <div class="d-grid gap-2 d-md-flex justify-content-md-end float-right float-top">
-    <button class="btn btn-danger me-md-2 btn-hover-bg-shade-amount:15%;" type="button"><a
-        style="color: white; text-decoration: none;" href="logout.php">Logout</a></button>
-  </div>
-<div class="alert alert-success" role="alert">
-  Successfully Login!!!
+<style>
+  #Btn{
+    border: none;
+    padding-top: 48px;
+    padding-left: 50px;
+  }
+</style>
+<div
+  class="alert alert-dismissible fade show alert-top-right text-success cover-container mt-4 d-flex w-100 h-100 p-3 mx-auto flex-column"
+  role="alert">
+  <h4 class="border border-secondary p-3">Successfully Login!!!
+  <button type="button" id="Btn" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+  </h4>
+  
 </div>
 </body>
 <?php include 'include/footer.php'; ?>
-<!-- class="d-grid gap-2 d-md-flex justify-content-md-end" -->
 
 </html>
