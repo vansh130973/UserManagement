@@ -46,10 +46,11 @@ if (session_status() == PHP_SESSION_NONE) {
           <a class="nav-link active" aria-current="page" href="index.php">Home</a>
 
           <?php if(isset($_SESSION['user_id'])): ?>
-            <a class="nav-link" href="logout.php">Logout</a>
+            <a class="nav-link active" aria-current="page" href="logout.php">Logout</a>
+            <a class="nav-link active" aria-current="page" href="update.php">Update</a>
           <?php else: ?>
-            <a class="nav-link" href="register.php">Sign-Up</a>
-            <a class="nav-link" href="login.php">Login</a>
+            <a class="nav-link active" aria-current="page" href="register.php">Sign-Up</a>
+            <a class="nav-link active" aria-current="page" href="login.php">Login</a>
           <?php endif; ?>
         </nav>
       </div>
