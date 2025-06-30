@@ -1,14 +1,19 @@
 <?php
-session_start(); // Start the session to access session variables
+session_start();
 require_once 'config.php';
 include 'include/header.php';
+$msg = "";
 ?>
-
+<style>
+  label {
+    display: flex;
+  }
+</style>
 <center>
   <h2>Register</h2>
 </center>
 
-<div class='cover-container mt-5 d-flex w-100 h-100 p-3 mx-auto flex-column'>
+<div class='cover-container mt-4 d-flex w-100 h-100 p-3 mx-auto flex-column'>
   <form id="registerForm" action="register-code.php" method="POST" enctype="multipart/form-data">
 
     <div class="mb-3">
@@ -50,6 +55,7 @@ include 'include/header.php';
     <div class="mb-3">
       <label>Address *</label>
       <input type="text" name="address" class="form-control" />
+      <div id="addressError" class="text-danger"></div>
     </div>
 
     <div class="mb-3">
@@ -72,43 +78,50 @@ include 'include/header.php';
     </div>
 
     <div class="mb-3">
+      <label>Image *</label>
+      <input type="file" id="fileImage" name="fileImage" class="form-control" />
+      <div id="imageError" class="text-danger"></div>
+    </div>
+
+    <div class="mb-3">
       <button type="submit" name="registerBtn" class="btn btn-primary mb-3">Register</button>
       You have an Account!!
       <a href="login.php">Login</a>
     </div>
+
   </form>
 </div>
 
 <script>
   var stateDistrictMap = {
-      Gujarat: ["Ahmedabad", "Surat", "Rajkot"],
-      Maharashtra: ["Mumbai", "Pune", "Nagpur"],
-      Rajasthan: ["Jaipur", "Udaipur", "Jodhpur"],
-    };
+    Gujarat: ["Ahmedabad", "Surat", "Rajkot"],
+    Maharashtra: ["Mumbai", "Pune", "Nagpur"],
+    Rajasthan: ["Jaipur", "Udaipur", "Jodhpur"],
+  };
 
-    var stateDropdown = document.getElementById("state");
-    var districtDropdown = document.getElementById("district");
+  var stateDropdown = document.getElementById("state");
+  var districtDropdown = document.getElementById("district");
 
-    stateDropdown.onchange = function () {
-      var selectedState = stateDropdown.value;
-      var districts = stateDistrictMap[selectedState];
+  stateDropdown.onchange = function () {
+    var selectedState = stateDropdown.value;
+    var districts = stateDistrictMap[selectedState];
 
-      districtDropdown.innerHTML = "";
+    districtDropdown.innerHTML = "";
 
-      var defaultOption = document.createElement("option");
-      defaultOption.text = "-- Select District --";
-      defaultOption.value = "";
-      districtDropdown.add(defaultOption);
+    var defaultOption = document.createElement("option");
+    defaultOption.text = "-- Select District --";
+    defaultOption.value = "";
+    districtDropdown.add(defaultOption);
 
-      if (districts) {
-        for (var i = 0; i < districts.length; i++) {
-          var option = document.createElement("option");
-          option.text = districts[i];
-          option.value = districts[i];
-          districtDropdown.add(option);
-        }
+    if (districts) {
+      for (var i = 0; i < districts.length; i++) {
+        var option = document.createElement("option");
+        option.text = districts[i];
+        option.value = districts[i];
+        districtDropdown.add(option);
       }
-    };
+    }
+  };
   document.getElementById('registerForm').addEventListener('submit', function (e) {
     let isValid = true;
 
@@ -119,8 +132,10 @@ include 'include/header.php';
     const username = form.username.value.trim();
     const password = form.password.value.trim();
     const email = form.email.value.trim();
+    const address = form.address.value.trim();
     const state = document.getElementById('state').value;
     const district = document.getElementById('district').value;
+    const fileImage = document.getElementById('fileImage').value;
 
     clearErrors();
 
@@ -164,6 +179,11 @@ include 'include/header.php';
       }
     }
 
+    if (!address) {
+      document.getElementById('addressError').textContent = "Address is required";
+      isValid = false;
+    }
+
     if (state === "") {
       document.getElementById('stateError').textContent = "State is required";
       isValid = false;
@@ -171,6 +191,11 @@ include 'include/header.php';
 
     if (district === "") {
       document.getElementById('districtError').textContent = "District is required";
+      isValid = false;
+    }
+
+    if (fileImage === "") {
+      document.getElementById('imageError').textContent = "Image is required";
       isValid = false;
     }
 
@@ -188,13 +213,15 @@ include 'include/header.php';
       'usernameError',
       'passwordError',
       'emailError',
+      'addressError',
       'stateError',
-      'districtError'
+      'districtError',
+      'imageError'
     ];
     errorFields.forEach(id => document.getElementById(id).textContent = '');
   }
 
-  allFields = ['name', 'firstname', 'lastname', 'username', 'password', 'email', 'state', 'district']
+  allFields = ['name', 'firstname', 'lastname', 'username', 'password', 'email', 'address', 'state', 'district', 'fileImage']
   allFields.forEach(field => {
     document.querySelector(`[name="${field}"]`).addEventListener('input', function () {
       document.getElementById(field + 'Error').textContent = '';
