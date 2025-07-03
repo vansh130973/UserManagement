@@ -1,9 +1,11 @@
 <?php
-include 'include/header.php';
-?>
-
-<?php
 require_once 'config.php';
+include 'include/header.php';
+
+if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin') {
+  echo "Access denied. Admins only.";
+  exit();
+}
 
 if (isset($_GET['delete'])) {
   $usernameToDelete = $conn->real_escape_string($_GET['delete']);
@@ -11,103 +13,99 @@ if (isset($_GET['delete'])) {
   $checkRoleResult = $conn->query($checkRoleSql);
   if ($checkRoleResult && $checkRoleResult->num_rows > 0) {
     $row = $checkRoleResult->fetch_assoc();
-    if ($row['role'] === 'admin') {
-      echo "Cannot delete admin users.";
+    $deleteSql = "DELETE FROM register WHERE username = '$usernameToDelete'";
+    if ($conn->query($deleteSql)) {
+      echo "<script>alert('User deleted successfully.');</script>";
+      exit();
     } else {
-      $deleteSql = "DELETE FROM register WHERE username = '$usernameToDelete'";
-      if ($conn->query($deleteSql)) {
-        echo "<script>alert('User deleted successfully.'); window.location.href = '" . $_SERVER['PHP_SELF'] . "';</script>";
-        exit();
-      } else {
-        echo "Error deleting user: " . $conn->error;
-      }
+      echo "Error deleting user: " . $conn->error;
     }
   }
 }
 
+$limitOptions = [10, 15, 20];
+$limit = isset($_GET['limit']) && in_array($_GET['limit'], $limitOptions) ? intval($_GET['limit']) : 10;
 
-if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin') {
-  echo "Access denied. Admins only.";
-  exit();
-}
+$page = isset($_GET['page']) && is_numeric($_GET['page']) ? intval($_GET['page']) : 1;
+$offset = ($page - 1) * $limit;
 
-$sql = "SELECT name, firstname, lastname, username, email, address, state, district, image FROM register WHERE role != 'admin'";
+$countResult = $conn->query("SELECT COUNT(*) AS total FROM register WHERE role != 'admin'");
+$totalUsers = $countResult->fetch_assoc()['total'];
+$totalPages = ceil($totalUsers / $limit);
+
+// Get users with the specified limit and offset
+$sql = "SELECT name, firstname, lastname, username, email, address, state, district 
+        FROM register 
+        WHERE role != 'admin' 
+        LIMIT $limit OFFSET $offset";
 $result = $conn->query($sql);
 ?>
+<link href="css/admin.css" rel="stylesheet">
 
-<style>
-  table {
-    border-collapse: collapse;
-    width: 100%;
-    margin: 20px auto;
-    display: flex;
-    justify-content: center;
-  }
+<div>
+  <br><br>
+  <h2>Registered Users</h2>
 
-  th,
-  td {
-    border: 1px solid #ccc;
-    padding: 8px;
-    text-align: center;
-  }
+  <div class="dropdown-wrapper">
+    <form method="GET" action="">
+      <label for="limit">Users per page:</label>
+      <select name="limit" id="limit" onchange="this.form.submit()">
+        <?php foreach ($limitOptions as $option): ?>
+          <option value="<?= $option ?>" <?= $option == $limit ? 'selected' : '' ?>><?= $option ?></option>
+        <?php endforeach; ?>
+      </select>
+    </form>
+  </div>
+</div>
 
-  th {
-    background-color: rgb(0, 0, 0);
-  }
-
-  img {
-    max-width: 100px;
-    height: auto;
-  }
-</style>
-</head>
-
-<body>
-  <h2 style="text-align:center;">Registered Users</h2>
-  <table>
-    <tr>
-      <th>Name</th>
-      <th>First Name</th>
-      <th>Last Name</th>
-      <th>Username</th>
-      <th>Email</th>
-      <th>Address</th>
-      <th>State</th>
-      <th>District</th>
-      <th>Image</th>
-      <th>Delete</th>
-    </tr>
-    <?php if ($result && $result->num_rows > 0): ?>
-      <?php while ($row = $result->fetch_assoc()): ?>
+<div class="table-wrapper">
+  <table class="centered-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Address</th>
+        <th>State</th>
+        <th>District</th>
+        <th>Delete</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php if ($result && $result->num_rows > 0): ?>
+        <?php while ($row = $result->fetch_assoc()): ?>
+          <tr>
+            <td><?= htmlspecialchars($row['name']) ?></td>
+            <td><?= htmlspecialchars($row['firstname']) ?></td>
+            <td><?= htmlspecialchars($row['lastname']) ?></td>
+            <td><?= htmlspecialchars($row['username']) ?></td>
+            <td><?= htmlspecialchars($row['email']) ?></td>
+            <td><?= htmlspecialchars($row['address']) ?></td>
+            <td><?= htmlspecialchars($row['state']) ?></td>
+            <td><?= htmlspecialchars($row['district']) ?></td>
+            <td>
+              <a class="text text-danger"
+                href="?delete=<?= urlencode($row['username']) ?>&page=<?= $page ?>&limit=<?= $limit ?>"
+                onclick="return confirm('Are you sure you want to delete this user?');">Delete</a>
+            </td>
+          </tr>
+        <?php endwhile; ?>
+      <?php else: ?>
         <tr>
-          <td><?= htmlspecialchars($row['name']) ?></td>
-          <td><?= htmlspecialchars($row['firstname']) ?></td>
-          <td><?= htmlspecialchars($row['lastname']) ?></td>
-          <td><?= htmlspecialchars($row['username']) ?></td>
-          <td><?= htmlspecialchars($row['email']) ?></td>
-          <td><?= htmlspecialchars($row['address']) ?></td>
-          <td><?= htmlspecialchars($row['state']) ?></td>
-          <td><?= htmlspecialchars($row['district']) ?></td>
-          <td>
-            <?php if (!empty($row['image'])): ?>
-              <img src="<?= $row['image'] ?>" alt="Profile Image" style="max-width: 150px; max-height: 150px;" />
-
-            <?php else: ?>
-              No Image
-            <?php endif; ?>
-          </td>
-          <td>
-            <a style="color: rgb(195,29,58);" href="?delete=<?= urlencode($row['username']) ?>"
-              onclick="return confirm('Are you sure you want to delete this user?');">Delete</a>
-          </td>
-
+          <td colspan="9">No users found.</td>
         </tr>
-      <?php endwhile; ?>
-    <?php endif; ?>
+      <?php endif; ?>
+    </tbody>
   </table>
-</body>
+</div>
 
-</html>
-
+<div class="pagination">
+  <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+    <a href="?page=<?= $i ?>&limit=<?= $limit ?>" class="<?= ($i == $page) ? 'active' : '' ?>"><?= $i ?></a>
+  <?php endfor; ?>
+</div>
+<br>
 
 <?php include 'include/footer.php'; ?>

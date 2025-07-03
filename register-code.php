@@ -13,6 +13,7 @@ if (isset($_POST['registerBtn']) && isset($_FILES['fileImage'])) {
     $lastname = $_POST['lastname'];
     $username = $_POST['username'];
     $password = $_POST['password'];
+    $date = $_POST['date'];
     $email = $_POST['email'];
     $address = $_POST['address'];
     $state = $_POST['state'];
@@ -29,8 +30,8 @@ if (isset($_POST['registerBtn']) && isset($_FILES['fileImage'])) {
 
         smtp_mailer($email, 'Account Verification', $mailHtml);
 
-        $query = "INSERT INTO register (name, firstname, lastname, username, password, email, address, state, district, image ,verification_id) 
-              VALUES ('$name', '$firstname', '$lastname', '$username', '$password', '$email', '$address', '$state', '$district', '$imagePath', '$verification_id')";
+        $query = "INSERT INTO register (name, firstname, lastname, username, password, DoB, email, address, state, district, image ,verification_id) 
+              VALUES ('$name', '$firstname', '$lastname', '$username', '$password', '$date', '$email', '$address', '$state', '$district', '$imagePath', '$verification_id')";
 
         if (mysqli_query($conn, $query)) {
             $_SESSION['message'] = "Account created successfully!";

@@ -3,6 +3,14 @@ session_start();
 require_once 'config.php';
 include 'include/header.php';
 $msg = "";
+
+// Fetch existing usernames from the database
+$usernames = [];
+$sql = "SELECT username FROM register";
+$result = $conn->query($sql);
+while ($row = $result->fetch_assoc()) {
+    $usernames[] = $row['username'];
+}
 ?>
 <style>
   label {
@@ -44,6 +52,11 @@ $msg = "";
       <label>Password *</label>
       <input type="password" name="password" class="form-control" />
       <div id="passwordError" class="text-danger"></div>
+    </div>
+
+    <div class="mb-3">
+      <label>DoB</label>
+      <input type="date" name="date" class="form-control" />
     </div>
 
     <div class="mb-3">
@@ -93,6 +106,9 @@ $msg = "";
 </div>
 
 <script>
+  // List of usernames from PHP
+  const allUsernames = <?php echo json_encode($usernames); ?>;
+
   var stateDistrictMap = {
     Gujarat: ["Ahmedabad", "Surat", "Rajkot"],
     Maharashtra: ["Mumbai", "Pune", "Nagpur"],
@@ -122,6 +138,16 @@ $msg = "";
       }
     }
   };
+
+  document.querySelector('[name="username"]').addEventListener('blur', function () {
+    const username = this.value.trim();
+    if (allUsernames.includes(username)) {
+      document.getElementById('usernameError').textContent = "Username is already taken";
+    } else {
+      document.getElementById('usernameError').textContent = "";
+    }
+  });
+
   document.getElementById('registerForm').addEventListener('submit', function (e) {
     let isValid = true;
 
@@ -139,7 +165,6 @@ $msg = "";
 
     clearErrors();
 
-    // Validation for required fields
     if (!name) {
       document.getElementById('nameError').textContent = "Name is required";
       isValid = false;
@@ -157,6 +182,9 @@ $msg = "";
 
     if (!username) {
       document.getElementById('usernameError').textContent = "Username is required";
+      isValid = false;
+    } else if (allUsernames.includes(username)) {
+      document.getElementById('usernameError').textContent = "Username is already taken";
       isValid = false;
     }
 
@@ -199,7 +227,6 @@ $msg = "";
       isValid = false;
     }
 
-    // Prevent form submission if validation fails
     if (!isValid) {
       e.preventDefault();
     }

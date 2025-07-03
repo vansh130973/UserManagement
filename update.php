@@ -1,12 +1,19 @@
 <?php
 include 'include/header.php';
 require_once 'config.php';
+
 $userName = $_SESSION['username'];
 $userObj = $conn->prepare("SELECT * FROM register WHERE username = ?");
 $userObj->bind_param("s", $userName);
 $userObj->execute();
 $result = $userObj->get_result();
 $user = $result->fetch_assoc();
+
+$usernamesResult = $conn->query("SELECT username FROM register");
+$allUsernames = [];
+while ($row = $usernamesResult->fetch_assoc()) {
+  $allUsernames[] = $row['username'];
+}
 ?>
 
 <style>
@@ -14,6 +21,7 @@ $user = $result->fetch_assoc();
     display: flex;
   }
 </style>
+
 <div class="mt-4">
   <?php
   if ($_SESSION['success'] == true) {
@@ -22,6 +30,7 @@ $user = $result->fetch_assoc();
   }
   ?>
 </div>
+
 <div class='cover-container mt-4 d-flex w-100 h-100 p-3 mx-auto flex-column'>
   <form id="updateForm" action="update-code.php" method="POST" enctype="multipart/form-data">
     <div class="mb-3">
@@ -55,6 +64,11 @@ $user = $result->fetch_assoc();
     </div>
 
     <div class="mb-3">
+      <label>Date of Birth *</label>
+      <input type="date" name="date" class="form-control" value="<?= $user['DoB'] ?>" />
+    </div>
+
+    <div class="mb-3">
       <label>Email *</label>
       <input type="email" name="email" class="form-control" value="<?= $user['email'] ?>" />
       <div id="emailError" class="text-danger"></div>
@@ -80,18 +94,23 @@ $user = $result->fetch_assoc();
 
     <div class="mb-3">
       <label>Image *</label>
-      <input type="file" name="fileImage" class="form-control mb-3" />
+      <input type="file" name="fileImage" id="fileImage" class="form-control mb-3" />
       <?php if (!empty($user['image'])): ?>
         <img src="<?= $user['image'] ?>" alt="Profile Image" style="max-width: 150px; max-height: 150px;" />
       <?php endif; ?>
       <div id="imageError" class="text-danger"></div>
     </div>
 
-    <div class="mb-3"><button type="submit" name="updateBtn" class="btn btn-primary mb-3">Update Profile</button></div>
+    <div class="mb-3">
+      <button type="submit" name="updateBtn" class="btn btn-primary mb-3">Update Profile</button>
+    </div>
   </form>
 </div>
 
 <script>
+  const allUsernames = <?= json_encode($allUsernames) ?>;
+  const currentUsername = "<?= $user['username'] ?>";
+
   document.getElementById('updateForm').addEventListener('submit', function (e) {
     let isValid = true;
 
@@ -120,21 +139,13 @@ $user = $result->fetch_assoc();
       document.getElementById('lastnameError').textContent = "Last name is required";
       isValid = false;
     }
-    if (username) {
-      fetch('checkUsername.php?username=' + username)
-        .then(response => response.json())
-        .then(data => {
-          if (data.exists) {
-            document.getElementById('usernameError').textContent = "Username is already taken";
-            isValid = false;
-          }
-        })
-        .catch(error => {
-          document.getElementById('usernameError').textContent = "Error checking username availability";
-          isValid = false;
-        });
+    if (!username) {
+      document.getElementById('usernameError').textContent = "Username is required";
+      isValid = false;
+    } else if (username !== currentUsername && allUsernames.includes(username)) {
+      document.getElementById('usernameError').textContent = "Username is already taken";
+      isValid = false;
     }
-
     if (!password) {
       document.getElementById('passwordError').textContent = "Password is required";
       isValid = false;
@@ -153,7 +164,7 @@ $user = $result->fetch_assoc();
       }
     }
     if (!address) {
-      document.getElementById('addressError').textContent = "State is required";
+      document.getElementById('addressError').textContent = "Address is required";
       isValid = false;
     }
     if (!state) {
@@ -164,11 +175,10 @@ $user = $result->fetch_assoc();
       document.getElementById('districtError').textContent = "District is required";
       isValid = false;
     }
-    if (fileImage.files.length === "") {
+    if (fileImage.files.length === 0) {
       document.getElementById('imageError').textContent = "Image is required";
       isValid = false;
     }
-
     if (!isValid) {
       e.preventDefault();
     }
@@ -189,19 +199,12 @@ $user = $result->fetch_assoc();
     ];
     errorFields.forEach(id => document.getElementById(id).textContent = '');
   }
-
   document.querySelector('[name="username"]').addEventListener('blur', function () {
     const username = this.value.trim();
-    if (username) {
-      fetch('check_username.php?username=' + username)
-        .then(response => response.json())
-        .then(data => {
-          if (data.exists) {
-            document.getElementById('usernameError').textContent = "Username is already taken";
-          } else {
-            document.getElementById('usernameError').textContent = "";
-          }
-        });
+    if (username && username !== currentUsername && allUsernames.includes(username)) {
+      document.getElementById('usernameError').textContent = "Username is already taken";
+    } else {
+      document.getElementById('usernameError').textContent = "";
     }
   });
 </script>

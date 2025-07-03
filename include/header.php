@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="h-100">
+<html lang="en">
 <?php
 // Start session if not already started
 if (session_status() == PHP_SESSION_NONE) {
@@ -32,8 +32,7 @@ if (session_status() == PHP_SESSION_NONE) {
     }
   </style>
 
-  <!-- Custom styles for this template -->
-  <link href="../cover.css" rel="stylesheet">
+  <link href="../css/cover.css" rel="stylesheet">
 </head>
 
 <body class="d-flex h-100 text-center text-white bg-dark">

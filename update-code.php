@@ -10,6 +10,7 @@ if (isset($_POST['updateBtn'])) {
   $lastname = $_POST['lastname'];
   $username = $_POST['username'];
   $password = $_POST['password'];
+  $date = $_POST['date'];
   $email = $_POST['email'];
   $address = $_POST['address'];
   $state = $_POST['state'];
@@ -28,6 +29,7 @@ if (isset($_POST['updateBtn'])) {
         lastname='$lastname',
         username='$username',
         password='$password',
+        DoB='$date', 
         email='$email', 
         address='$address', 
         state='$state',
@@ -44,6 +46,7 @@ if (isset($_POST['updateBtn'])) {
       lastname='$lastname',
       username='$username',
       password='$password',
+      DoB='$date', 
       email='$email', 
       address='$address', 
       state='$state',
@@ -57,6 +60,7 @@ if (isset($_POST['updateBtn'])) {
     $_SESSION['lastname'] = $lastname;
     $_SESSION['username'] = $username;
     $_SESSION['password'] = $password;
+    $_SESSION['date'] = $date;
     $_SESSION['email'] = $email;
     $_SESSION['address'] = $address;
     $_SESSION['state'] = $state;
