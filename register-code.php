@@ -26,28 +26,28 @@ if (isset($_POST['registerBtn']) && isset($_FILES['fileImage'])) {
 
         $verification_id = rand(111111111, 999999999);
 
-        $mailHtml = "Please confirm your account registration by clicking the button or link below: <a href='http://user.local/check.php?id=$verification_id'>http://user.local/check.php?id=$verification_id</a>";
+        $mailHtml = "Please confirm your account registration by clicking the button or link below: 
+        <a href='http://user.local/check.php?id=$verification_id'>http://user.local/check.php?id=$verification_id</a>";
 
-        smtp_mailer($email, 'Account Verification', $mailHtml);
+        $mailSent = smtp_mailer($email, 'Account Verification', $mailHtml);
 
-        $query = "INSERT INTO register (name, firstname, lastname, username, password, DoB, email, address, state, district, image ,verification_id) 
+        if ($mailSent) {
+            $query = "INSERT INTO register (name, firstname, lastname, username, password, DoB, email, address, state, district, image, verification_id) 
               VALUES ('$name', '$firstname', '$lastname', '$username', '$password', '$date', '$email', '$address', '$state', '$district', '$imagePath', '$verification_id')";
 
-        if (mysqli_query($conn, $query)) {
-            $_SESSION['message'] = "Account created successfully!";
-            header("Location: register.php");
-            exit();
-        } else {
-            $_SESSION['message'] = "Error: " . mysqli_error($conn);
-            header("Location: index.php");
-            echo 'User Name Already exists';
-            exit();
+            if (mysqli_query($conn, $query)) {
+                $_SESSION['message'] = "<div class='alert alert-success'>Account created successfully! Email sent successfully. Please check your email to verify your account.</div>";
+                header("Location: register.php");
+                exit();
+            } else {
+                $_SESSION['message'] = "<div class='alert alert-danger'>Account creation failed: " . mysqli_error($conn) . "</div>";
+                header("Location: register.php");
+                exit();
+            }
         }
-
     } else {
-        $_SESSION['message'] = "Error uploading image!";
-        header("Location: index.php");
-        echo 'Please select low size image';
+        $_SESSION['message'] = "<div class='alert alert-danger'>Error uploading image! Please select a smaller image.</div>";
+        header("Location: register.php");
         exit();
     }
 }
@@ -58,20 +58,20 @@ function smtp_mailer($to, $subject, $msg)
     try {
         // Server settings
         $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';
-        $mail->SMTPAuth   = true;
-        $mail->Username   = 'vanshapanchal@gmail.com';
-        $mail->Password   = 'larewrkkphvxcanr';
+        $mail->Host = 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
+        $mail->Username = 'vanshapanchal@gmail.com';
+        $mail->Password = 'larewrkkphvxcanr';
         $mail->SMTPSecure = 'tls';
-        $mail->Port       = 587;
-        $mail->SMTPDebug = 2; 
+        $mail->Port = 587;
+        $mail->SMTPDebug = 0; // Set to 0 to hide debug output
 
         $mail->setFrom('vanshapanchal@gmail.com', 'Vansh');
         $mail->addAddress($to);
 
         $mail->isHTML(true);
         $mail->Subject = $subject;
-        $mail->Body    = $msg;
+        $mail->Body = $msg;
 
         if ($mail->send()) {
             return true;
@@ -79,7 +79,7 @@ function smtp_mailer($to, $subject, $msg)
             return false;
         }
     } catch (Exception $e) {
-        echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+        error_log("Mailer Error: {$mail->ErrorInfo}");
         return false;
     }
 }

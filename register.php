@@ -9,7 +9,7 @@ $usernames = [];
 $sql = "SELECT username FROM register";
 $result = $conn->query($sql);
 while ($row = $result->fetch_assoc()) {
-    $usernames[] = $row['username'];
+  $usernames[] = $row['username'];
 }
 ?>
 <style>
@@ -23,6 +23,16 @@ while ($row = $result->fetch_assoc()) {
 
 <div class='cover-container mt-4 d-flex w-100 h-100 p-3 mx-auto flex-column'>
   <form id="registerForm" action="register-code.php" method="POST" enctype="multipart/form-data">
+
+    <?php if (isset($_SESSION['message'])): ?>
+      <p class="text-center">
+        <?php
+        echo $_SESSION['message'];
+        unset($_SESSION['message']);
+        ?>
+      </p>
+    <?php endif; ?>
+
 
     <div class="mb-3">
       <label>Name *</label>
