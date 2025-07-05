@@ -15,7 +15,6 @@ if (isset($_POST['loginBtn'])) {
     }
 
     if (count($errors) === 0) {
-        // Fetch user by username
         $stmt = $conn->prepare("SELECT * FROM register WHERE username = ?");
         $stmt->bind_param("s", $loginUsername);
         $stmt->execute();
@@ -24,18 +23,18 @@ if (isset($_POST['loginBtn'])) {
         if ($result->num_rows === 1) {
             $user = $result->fetch_assoc();
 
-            // Use password_verify if password is hashed
             if ($loginPassword === $user['password']) {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['role'] = $user['role'];
 
                 $verification_status = $user['verification_status'];
-                
+
                 if ($verification_status == 0) {
-                    echo "You have not confirmed your account yet. Please check your inbox and verify your email id.";
+                    $_SESSION['message'] = "<div class='alert alert-warning'>Email not verified. Please check your email and verify your account.</div>";
+                    header('Location: login.php');
+                    exit();
                 } else {
-                    echo "done";
                     $_SESSION['IS_LOGIN'] = 1;
                     if ($user['role'] === 'admin') {
                         header('Location: admin.php');
@@ -54,9 +53,10 @@ if (isset($_POST['loginBtn'])) {
         $stmt->close();
     }
 
-    // Show errors if any
-    foreach ($errors as $error) {
-        echo "<p style='color:red;'>$error</p>";
+    if (!empty($errors)) {
+        $_SESSION['message'] = "<div class='alert alert-danger'>" . implode("<br>", $errors) . "</div>";
+        header('Location: login.php');
+        exit();
     }
 }
 ?>
